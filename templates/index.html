@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deepfake Detector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px 20px;
+        }
+
+        .detector-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .detector-section {
+            padding: 30px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            background: #f8f9fa;
+        }
+
+        .detector-section h2 {
+            color: #667eea;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+        }
+
+        .upload-area {
+            border: 2px dashed #667eea;
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            background: white;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            background: #f0f4ff;
+            border-color: #764ba2;
+        }
+
+        .upload-area input[type="file"] {
+            display: none;
+        }
+
+        .upload-area p {
+            color: #666;
+            margin: 10px 0;
+        }
+
+        .upload-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .upload-label:hover {
+            background: #764ba2;
+        }
+
+        .file-name {
+            color: #667eea;
+            font-weight: bold;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin-bottom: 20px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .result {
+            padding: 20px;
+            border-radius: 8px;
+            display: none;
+            margin-bottom: 20px;
+        }
+
+        .result.show {
+            display: block;
+        }
+
+        .result.real {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+        }
+
+        .result.fake {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+        }
+
+        .result.error {
+            background: #fff3e0;
+            border-left: 4px solid #ff9800;
+        }
+
+        .result-label {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result.real .result-label {
+            color: #4caf50;
+        }
+
+        .result.fake .result-label {
+            color: #f44336;
+        }
+
+        .result.error .result-label {
+            color: #ff9800;
+        }
+
+        .confidence {
+            margin-top: 10px;
+        }
+
+        .confidence-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+
+        .confidence-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .confidence-text {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .spinner {
+            border: 3px solid #e0e0e0;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-text {
+            color: #f44336;
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .detector-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .detector-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔍 Deepfake Detector</h1>
+            <p>Detect AI-generated images and audio with confidence</p>
+        </header>
+
+        <div class="content">
+            <div class="detector-grid">
+                <!-- Image Detection Section -->
+                <div class="detector-section">
+                    <h2>🖼️ Image Detection</h2>
+                    
+                    <div class="upload-area" id="imageUploadArea">
+                        <label class="upload-label">
+                            Choose Image
+                            <input type="file" id="imageInput" accept=".jpg,.jpeg,.png" />
+                        </label>
+                        <p>or drag and drop</p>
+                        <p style="font-size: 0.85rem; color: #999;">JPG or PNG (max 10MB)</p>
+                        <div class="file-name" id="imageFileName"></div>
+                    </div>
+
+                    <button id="detectImageBtn" onclick="detectImage()">Analyze Image</button>
+
+                    <div class="loading" id="imageLoading">
+                        <div class="spinner"></div>
+                        <span>Analyzing image...</span>
+                    </div>
+
+                    <div class="result" id="imageResult">
+                        <div class="result-label" id="imageLabel"></div>
+                        <div class="confidence">
+                            <div class="confidence-label">Confidence Score</div>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" id="imageConfidenceFill"></div>
+                            </div>
+                            <div class="confidence-text" id="imageConfidenceText"></div>
+                        </div>
+                    </div>
+
+                    <div class="error-text" id="imageError"></div>
+                </div>
+
+                <!-- Audio Detection Section -->
+                <div class="detector-section">
+                    <h2>🎵 Audio Detection</h2>
+                    
+                    <div class="upload-area" id="audioUploadArea">
+                        <label class="upload-label">
+                            Choose Audio
+                            <input type="file" id="audioInput" accept=".wav,.mp3" />
+                        </label>
+                        <p>or drag and drop</p>
+                        <p style="font-size: 0.85rem; color: #999;">WAV or MP3 (max 10MB)</p>
+                        <div class="file-name" id="audioFileName"></div>
+                    </div>
+
+                    <button id="detectAudioBtn" onclick="detectAudio()">Analyze Audio</button>
+
+                    <div class="loading" id="audioLoading">
+                        <div class="spinner"></div>
+                        <span>Analyzing audio...</span>
+                    </div>
+
+                    <div class="result" id="audioResult">
+                        <div class="result-label" id="audioLabel"></div>
+                        <div class="confidence">
+                            <div class="confidence-label">Confidence Score</div>
+                            <div class="confidence-bar">
+                                <div class="confidence-fill" id="audioConfidenceFill"></div>
+                            </div>
+                            <div class="confidence-text" id="audioConfidenceText"></div>
+                        </div>
+                    </div>
+
+                    <div class="error-text" id="audioError"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
