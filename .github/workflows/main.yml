@@ -25,7 +25,7 @@ jobs:
             --exclude .git \
             --exclude .github
 
-          cd <deepfake_ai_detector>
+          cd deepfake_ai_detector
           git add .
           git commit -m "Sync from GitHub" || echo "No changes to commit"
-          git push https://<sainarc>:$HF_TOKEN@huggingface.co/spaces/<sainarc>/<deepfake_ai_detector>
+          git push https://sainarc:$HF_TOKEN@huggingface.co/spaces/sainarc/deepfake_ai_detector
