@@ -1,3 +1,16 @@
+---
+title: Deepfake Ai Detector
+emoji: 📉
+colorFrom: gray
+colorTo: blue
+sdk: gradio
+sdk_version: 6.2.0
+app_file: app.py
+pinned: false
+license: mit
+short_description: This is my first Space
+---
+
 # Deepfake Detector Website
 
 A web-based application to detect AI-generated (fake) images and deepfake audio files using Hugging Face models.
