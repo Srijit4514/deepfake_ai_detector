@@ -1,0 +1,31 @@
+name: Deploy to Hugging Face Spaces
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "github-actions"
+
+          git clone https://huggingface.co/spaces/<HF_USERNAME>/<SPACE_NAME>
+          rsync -av --delete ./ <SPACE_NAME>/ \
+            --exclude .git \
+            --exclude .github
+
+          cd <deepfake_ai_detector>
+          git add .
+          git commit -m "Sync from GitHub" || echo "No changes to commit"
+          git push https://<sainarc>:$HF_TOKEN@huggingface.co/spaces/<sainarc>/<deepfake_ai_detector>
